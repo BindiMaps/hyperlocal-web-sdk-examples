@@ -1,0 +1,129 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #0f0f0f;
+    color: #e0e0e0;
+    min-height: 100vh;
+}
+
+.app {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.subtitle {
+    color: #888;
+    margin-bottom: 1.5rem;
+}
+
+.video-container {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #1a1a1a;
+    margin-bottom: 1rem;
+}
+
+.video-container video {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+button {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    background: #e94560;
+    color: white;
+    transition: opacity 0.15s;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+button.secondary {
+    background: #333;
+}
+
+.previews {
+    margin-bottom: 1.5rem;
+}
+
+.previews h3 {
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.preview-grid {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.preview-grid img {
+    width: 80px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.result {
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.result.success {
+    background: #0a2e1a;
+    border: 1px solid #1a6b3a;
+}
+
+.result.error {
+    background: #2e0a0a;
+    border: 1px solid #6b1a1a;
+}
+
+.result h3 {
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.result pre {
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
