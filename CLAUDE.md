@@ -12,7 +12,7 @@ Each example is independent. Commands run from within the example directory (e.g
 
 ```bash
 npm install       # install deps
-npm run start     # dev server (basic-react: port 5180)
+npm run start     # dev server (basic-react: port 5913)
 npm run build     # production build via vite
 ```
 
