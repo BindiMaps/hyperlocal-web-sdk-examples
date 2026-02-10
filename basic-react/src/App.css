@@ -134,6 +134,12 @@ select.config-input {
     border-color: #e94560;
 }
 
+.fixture-summary {
+    font-size: 0.85rem;
+    color: #aaa;
+    padding: 0.25rem 0;
+}
+
 .payload-status {
     text-align: center;
     padding: 1rem;

@@ -2,6 +2,8 @@
 
 Minimal React example showing how to integrate both BindiMaps SDK packages in mock mode.
 
+**Live demo:** https://bindimaps.github.io/hyperlocal-web-sdk-examples/basic-react/
+
 ## What this example demonstrates
 
 - Camera stream setup with `useCameraStream` from `@bindimaps/hyperlocal-react`

@@ -2,6 +2,8 @@
 
 Example applications demonstrating the [Hyperlocal Web SDK](https://www.npmjs.com/package/@bindimaps/hyperlocal-web-sdk) and [Hyperlocal React](https://www.npmjs.com/package/@bindimaps/hyperlocal-react) packages.
 
+**Live examples:** https://bindimaps.github.io/hyperlocal-web-sdk-examples/
+
 ## SDK roles
 
 - `@bindimaps/hyperlocal-react` provides React-first hooks for camera stream and capture flow.

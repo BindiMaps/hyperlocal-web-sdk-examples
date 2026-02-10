@@ -3,7 +3,7 @@ import { useCameraStream, useFrameCapture } from "@bindimaps/hyperlocal-react"
 import { estimatePosition, HyperlocalEnvironment, type PositionResult, type CapturedFrame } from "@bindimaps/hyperlocal-web-sdk"
 
 type Phase = "idle" | "capturing" | "estimating" | "done" | "error"
-type InputMode = "camera" | "payload"
+type InputMode = "camera" | "payload" | "testdata"
 
 type AppConfig = {
     mock: boolean
@@ -22,6 +22,16 @@ type TestPayload = {
     lng: number
     images: string[]
 }
+
+type TestFixture = {
+    name: string
+    locationId: string
+    environment: number
+    gpsCoordinates: { lat: number; lon: number }
+    images: string[]
+}
+
+const BASE_URL = import.meta.env.BASE_URL
 
 const PAYLOAD_TEMPLATE = `{
   "mock": false,
@@ -120,6 +130,11 @@ export function App() {
     const [inputMode, setInputMode] = useState<InputMode>("camera")
     const [payloadText, setPayloadText] = useState<string>(loadPayload)
 
+    // Test data state
+    const [fixture, setFixture] = useState<TestFixture | null>(null)
+    const [fixtureError, setFixtureError] = useState<string | null>(null)
+    const [fixtureLoading, setFixtureLoading] = useState(false)
+
     // Persist config + payload to localStorage
     useEffect(() => {
         localStorage.setItem(CONFIG_KEY, JSON.stringify(config))
@@ -127,6 +142,21 @@ export function App() {
     useEffect(() => {
         localStorage.setItem(PAYLOAD_KEY, payloadText)
     }, [payloadText])
+
+    // Load fixture manifest when switching to testdata tab
+    useEffect(() => {
+        if (inputMode !== "testdata" || fixture) return
+        setFixtureLoading(true)
+        setFixtureError(null)
+        fetch(`${BASE_URL}testData/guidedogs/data.json`)
+            .then((res) => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`)
+                return res.json()
+            })
+            .then((data: TestFixture) => setFixture(data))
+            .catch((err) => setFixtureError(String(err)))
+            .finally(() => setFixtureLoading(false))
+    }, [inputMode, fixture])
 
     const updateConfig = (patch: Partial<AppConfig>) =>
         setConfig((prev) => ({ ...prev, ...patch }))
@@ -152,11 +182,20 @@ export function App() {
             config.lat.trim() !== "" && !isNaN(parseFloat(config.lat)) &&
             config.lng.trim() !== "" && !isNaN(parseFloat(config.lng)))
 
-    const canStart = inputMode === "camera" ? isRealModeReady : parsedPayload !== null
+    const isTestDataReady = fixture !== null
+
+    const canStart =
+        inputMode === "camera" ? isRealModeReady :
+        inputMode === "payload" ? parsedPayload !== null :
+        isTestDataReady
 
     const handleStart = () => {
         if (inputMode === "payload") {
             handlePayloadRun()
+            return
+        }
+        if (inputMode === "testdata") {
+            handleTestDataRun()
             return
         }
 
@@ -222,6 +261,36 @@ export function App() {
         }
     }
 
+    const handleTestDataRun = async () => {
+        if (!fixture) return
+        setPhase("estimating")
+        setResult(null)
+        setErrorDetail(null)
+        try {
+            const imageUrls = fixture.images.map(
+                (name) => `${BASE_URL}testData/guidedogs/${name}`,
+            )
+            const frames = await fetchFrames(imageUrls)
+            const res = await estimatePosition(
+                frames,
+                config.mock ? "mock-location-123" : fixture.locationId,
+                {
+                    latitude: fixture.gpsCoordinates.lat,
+                    longitude: fixture.gpsCoordinates.lon,
+                },
+                config.mock
+                    ? { mock: true }
+                    : { environment: fixture.environment },
+            )
+            setResult(res)
+            setPhase(res.type === "success" ? "done" : "error")
+        } catch (error) {
+            console.error("estimatePosition from test data failed", error)
+            setErrorDetail(error)
+            setPhase("error")
+        }
+    }
+
     const handleReset = () => {
         setPhase("idle")
         setResult(null)
@@ -235,9 +304,11 @@ export function App() {
             <p className="subtitle">
                 {inputMode === "payload"
                     ? "Payload mode — estimate from pasted image URLs"
-                    : config.mock
-                        ? "Mock mode — no camera or API required"
-                        : "Real mode — live SDK calls"}
+                    : inputMode === "testdata"
+                        ? "Test data mode — estimate from bundled fixtures"
+                        : config.mock
+                            ? "Mock mode — no camera or API required"
+                            : "Real mode — live SDK calls"}
             </p>
 
             {/* ── Input mode tabs ── */}
@@ -253,6 +324,12 @@ export function App() {
                     onClick={() => setInputMode("payload")}
                 >
                     Paste Payload
+                </button>
+                <button
+                    className={`mode-tab ${inputMode === "testdata" ? "active" : ""}`}
+                    onClick={() => setInputMode("testdata")}
+                >
+                    Test Data
                 </button>
             </div>
 
@@ -357,6 +434,40 @@ export function App() {
                 </div>
             )}
 
+            {/* ── Test Data panel ── */}
+            {inputMode === "testdata" && (
+                <div className="config-panel">
+                    <label className="config-row">
+                        <input
+                            type="checkbox"
+                            checked={config.mock}
+                            onChange={(e) => updateConfig({ mock: e.target.checked })}
+                        />
+                        Mock mode
+                    </label>
+
+                    {fixtureLoading && (
+                        <p className="config-row" style={{ color: "#888" }}>Loading fixture data...</p>
+                    )}
+                    {fixtureError && (
+                        <p className="config-hint">Failed to load fixtures: {fixtureError}</p>
+                    )}
+                    {fixture && (
+                        <div className="fixture-summary">
+                            <strong>{fixture.name}</strong>
+                            <br />
+                            {fixture.images.length} images &middot; GPS: {fixture.gpsCoordinates.lat.toFixed(3)}, {fixture.gpsCoordinates.lon.toFixed(3)}
+                            {!config.mock && (
+                                <>
+                                    <br />
+                                    Location: {fixture.locationId} &middot; Env: {ENV_LABELS[fixture.environment] ?? fixture.environment}
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* ── Video (camera mode only) ── */}
             {inputMode === "camera" && (
                 <div className="video-container">
@@ -372,8 +483,8 @@ export function App() {
                 </div>
             )}
 
-            {/* ── Estimating overlay for payload mode ── */}
-            {inputMode === "payload" && phase === "estimating" && (
+            {/* ── Estimating overlay for non-camera modes ── */}
+            {inputMode !== "camera" && phase === "estimating" && (
                 <div className="payload-status">Fetching images & estimating...</div>
             )}
 
@@ -382,7 +493,9 @@ export function App() {
                     <button onClick={handleStart} disabled={!canStart}>
                         {inputMode === "payload"
                             ? "Estimate from Payload"
-                            : phase === "idle" ? "Find My Position" : "Try Again"}
+                            : inputMode === "testdata"
+                                ? "Run Test"
+                                : phase === "idle" ? "Find My Position" : "Try Again"}
                     </button>
                 )}
                 {phase !== "idle" && (
