@@ -20,7 +20,7 @@ Camera feed -> captured frames -> position estimate.
 ## Getting started
 
 ```bash
-git clone https://github.com/nicejudy/hyperlocal-web-sdk-examples.git
+git clone https://github.com/BindiMaps/hyperlocal-web-sdk-examples.git
 cd hyperlocal-web-sdk-examples/basic-react
 npm install
 npm run start
@@ -30,6 +30,20 @@ npm run build
 `basic-react` runs on `http://localhost:5913`.
 
 > **Note:** The SDK packages use mock mode by default in these examples, so no API key or camera access is required to run them.
+
+## Deploying
+
+Pushes to `main` automatically deploy to GitHub Pages via the workflow in `.github/workflows/deploy.yml`.
+
+**Live site:** https://bindimaps.github.io/hyperlocal-web-sdk-examples/
+
+To build locally:
+
+```bash
+./scripts/deploy.sh
+```
+
+This discovers all example directories, runs `npm ci` + `npm audit` + `npm run build` in each, and assembles a `_site/` directory with a root index linking to every example.
 
 ## Repository layout
 

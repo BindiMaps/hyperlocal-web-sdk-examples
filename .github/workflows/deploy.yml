@@ -1,0 +1,99 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Discover examples
+        id: examples
+        run: |
+          examples=()
+          for dir in */; do
+            dir="${dir%/}"
+            [[ -f "$dir/package.json" ]] && examples+=("$dir")
+          done
+          echo "list=${examples[*]}" >> "$GITHUB_OUTPUT"
+
+      - name: Build examples
+        env:
+          EXAMPLES: ${{ steps.examples.outputs.list }}
+        run: |
+          for example in $EXAMPLES; do
+            echo "=== $example ==="
+            cd "$example"
+            npm ci
+            npm audit --audit-level=moderate || echo "⚠ audit warnings (non-blocking)"
+            npm run build -- --base=/hyperlocal-web-sdk-examples/$example/
+            cd ..
+          done
+
+      - name: Assemble _site
+        env:
+          EXAMPLES: ${{ steps.examples.outputs.list }}
+        run: |
+          mkdir -p _site
+          for example in $EXAMPLES; do
+            cp -r "$example/dist" "_site/$example"
+          done
+
+          cat > _site/index.html <<'INDEXEOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Hyperlocal Web SDK Examples</title>
+              <style>
+                  body { font-family: system-ui, sans-serif; max-width: 600px; margin: 4rem auto; padding: 0 1rem; }
+                  a { color: #0969da; }
+                  li { margin: 0.5rem 0; }
+              </style>
+          </head>
+          <body>
+              <h1>Hyperlocal Web SDK Examples</h1>
+              <ul>
+          INDEXEOF
+
+          for example in $EXAMPLES; do
+            echo "        <li><a href=\"./$example/\">$example</a></li>" >> _site/index.html
+          done
+
+          cat >> _site/index.html <<'INDEXEOF'
+              </ul>
+          </body>
+          </html>
+          INDEXEOF
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
