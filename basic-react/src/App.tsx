@@ -8,26 +8,44 @@ export function App() {
     const [phase, setPhase] = useState<Phase>("idle")
     const [result, setResult] = useState<PositionResult | null>(null)
 
+    // First arg enables the stream immediately on mount.
     const { videoRef } = useCameraStream(true, { mock: true })
     const [capture, actions] = useFrameCapture()
 
     const handleStart = () => {
+        // If the video element is missing, even mock mode cannot capture vibes.
+        const videoElement = videoRef.current
+        if (!videoElement) {
+            setPhase("error")
+            return
+        }
+
         setPhase("capturing")
         setResult(null)
 
-        actions.startCapture(videoRef.current!, {
+        actions.startCapture(videoElement, {
+            // Capture 15 frames before triggering estimation.
             frameThreshold: 15,
+            // Enables capture.previewUrls for the preview grid.
             showPreview: true,
             onFrameThreshold: async (frames) => {
                 setPhase("estimating")
-                const res = await estimatePosition(
-                    frames,
-                    "mock-location-123",
-                    { latitude: -33.8688, longitude: 151.2093 },
-                    { mock: true },
-                )
-                setResult(res)
-                setPhase(res.type === "success" ? "done" : "error")
+                try {
+                    const res = await estimatePosition(
+                        frames,
+                        // Example mock location id; replace with your real location id.
+                        "mock-location-123",
+                        // Approximate location hint to narrow matching.
+                        { latitude: -33.8688, longitude: 151.2093 },
+                        { mock: true },
+                    )
+                    setResult(res)
+                    setPhase(res.type === "success" ? "done" : "error")
+                } catch (error) {
+                    console.error("estimatePosition failed", error)
+                    setResult(null)
+                    setPhase("error")
+                }
             },
         })
     }

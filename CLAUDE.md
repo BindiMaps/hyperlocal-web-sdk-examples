@@ -6,6 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Monorepo of example applications for the [Hyperlocal Web SDK](https://www.npmjs.com/package/@bindimaps/hyperlocal-web-sdk) (`@bindimaps/hyperlocal-web-sdk`) and [Hyperlocal React](https://www.npmjs.com/package/@bindimaps/hyperlocal-react) (`@bindimaps/hyperlocal-react`). Each subdirectory is a standalone example app. All examples use **mock mode** — no API keys or camera access needed.
 
+SDK roles:
+
+- `@bindimaps/hyperlocal-react`: React hooks for stream and capture flow
+- `@bindimaps/hyperlocal-web-sdk`: core localisation APIs (for example `estimatePosition`)
+
 ## Commands
 
 Each example is independent. Commands run from within the example directory (e.g. `basic-react/`):
@@ -17,6 +22,8 @@ npm run build     # production build via vite
 ```
 
 No linter or test runner is configured.
+
+Keep command and onboarding details in sync with the human-facing docs in `README.md` and `basic-react/README.md`.
 
 ## Architecture
 
