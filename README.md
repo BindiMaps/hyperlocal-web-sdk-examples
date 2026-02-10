@@ -39,13 +39,7 @@ Pushes to `main` automatically deploy to GitHub Pages via the workflow in `.gith
 
 **Live site:** https://bindimaps.github.io/hyperlocal-web-sdk-examples/
 
-To build locally:
-
-```bash
-./scripts/deploy.sh
-```
-
-This discovers all example directories, runs `npm ci` + `npm audit` + `npm run build` in each, and assembles a `_site/` directory with a root index linking to every example.
+The deploy pipeline (`./scripts/deploy.sh`) discovers all example directories, runs `npm ci` + `npm audit` + `npm run build` in each (with GitHub Pages base paths), and assembles a `_site/` directory with a root index linking to every example. This runs automatically in CI — you shouldn't need to run it locally.
 
 ## Repository layout
 

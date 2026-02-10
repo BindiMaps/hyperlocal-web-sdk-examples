@@ -23,12 +23,7 @@ npm run build     # production build via vite
 
 No linter or test runner is configured.
 
-Deploy / build commands (from repo root):
-
-```bash
-./scripts/deploy.sh          # local build: ci + audit + build all examples → _site/
-# GH Actions deploys automatically on push to main (.github/workflows/deploy.yml)
-```
+Deploy is handled by CI (GH Actions on push to `main`, see `.github/workflows/deploy.yml`). The script `./scripts/deploy.sh` assembles the full GitHub Pages site with hardcoded base paths — it's not meant for local dev.
 
 Keep command and onboarding details in sync with the human-facing docs in `README.md` and `basic-react/README.md`.
 
