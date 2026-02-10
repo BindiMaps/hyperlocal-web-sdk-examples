@@ -273,14 +273,12 @@ export function App() {
             const frames = await fetchFrames(imageUrls)
             const res = await estimatePosition(
                 frames,
-                config.mock ? "mock-location-123" : fixture.locationId,
+                fixture.locationId,
                 {
                     latitude: fixture.gpsCoordinates.lat,
                     longitude: fixture.gpsCoordinates.lon,
                 },
-                config.mock
-                    ? { mock: true }
-                    : { environment: fixture.environment },
+                { environment: fixture.environment },
             )
             setResult(res)
             setPhase(res.type === "success" ? "done" : "error")
@@ -437,15 +435,6 @@ export function App() {
             {/* ── Test Data panel ── */}
             {inputMode === "testdata" && (
                 <div className="config-panel">
-                    <label className="config-row">
-                        <input
-                            type="checkbox"
-                            checked={config.mock}
-                            onChange={(e) => updateConfig({ mock: e.target.checked })}
-                        />
-                        Mock mode
-                    </label>
-
                     {fixtureLoading && (
                         <p className="config-row" style={{ color: "#888" }}>Loading fixture data...</p>
                     )}
@@ -457,12 +446,8 @@ export function App() {
                             <strong>{fixture.name}</strong>
                             <br />
                             {fixture.images.length} images &middot; GPS: {fixture.gpsCoordinates.lat.toFixed(3)}, {fixture.gpsCoordinates.lon.toFixed(3)}
-                            {!config.mock && (
-                                <>
-                                    <br />
-                                    Location: {fixture.locationId} &middot; Env: {ENV_LABELS[fixture.environment] ?? fixture.environment}
-                                </>
-                            )}
+                            <br />
+                            Location: {fixture.locationId} &middot; Env: {ENV_LABELS[fixture.environment] ?? fixture.environment}
                         </div>
                     )}
                 </div>
